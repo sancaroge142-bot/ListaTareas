@@ -2,6 +2,7 @@ const API_URL = 'https://693311fae5a9e342d271d293.mockapi.io/api/v1/tasks'; // c
 
 const taskInput = document.getElementById("taskInput");
 const addTaskBtn = document.getElementById("addTaskBtn");
+const descInput = document.getElementById("descInput"); 
 const taskList = document.getElementById("taskList");
 
 // Obtener tareas al cargar
@@ -11,15 +12,17 @@ async function fetchTasks() {
   renderTasks(tasks);
 }
 
-// Renderizar tareas
 function renderTasks(tasks) {
   taskList.innerHTML = "";
   tasks.forEach(task => {
     const li = document.createElement("li");
     li.innerHTML = `
-      <span class="${task.completed ? "completed" : ""}" data-id="${task.id}">
-        ${task.title}
-      </span>
+      <div>
+        <span class="${task.completed ? "completed" : ""}" data-id="${task.id}">
+          <strong>${task.title}</strong>
+        </span>
+        <p style="margin: 5px 0; color: #555;">${task.description || ""}</p>
+      </div>
       <div>
         <button onclick="toggleTask('${task.id}', ${task.completed})">✔️</button>
         <button onclick="deleteTask('${task.id}')">❌</button>
@@ -29,18 +32,22 @@ function renderTasks(tasks) {
   });
 }
 
-// Crear tarea
+// Crear tarea con título y descripción
 async function addTask() {
   const title = taskInput.value.trim();
+  const description = descInput.value.trim(); // capturar descripción
   if (!title) return;
+
   const res = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, completed: false })
+    body: JSON.stringify({ title, description, completed: false })
   });
+
   const newTask = await res.json();
   fetchTasks();
   taskInput.value = "";
+  descInput.value = ""; // limpiar campo
 }
 
 // Marcar tarea
