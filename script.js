@@ -1,0 +1,66 @@
+const API_URL = 'https://693311fae5a9e342d271d293.mockapi.io/api/v1/tasks'; // cambia por tu URL real
+
+const taskInput = document.getElementById("taskInput");
+const addTaskBtn = document.getElementById("addTaskBtn");
+const taskList = document.getElementById("taskList");
+
+// Obtener tareas al cargar
+async function fetchTasks() {
+  const res = await fetch(API_URL);
+  const tasks = await res.json();
+  renderTasks(tasks);
+}
+
+// Renderizar tareas
+function renderTasks(tasks) {
+  taskList.innerHTML = "";
+  tasks.forEach(task => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span class="${task.completed ? "completed" : ""}" data-id="${task.id}">
+        ${task.title}
+      </span>
+      <div>
+        <button onclick="toggleTask('${task.id}', ${task.completed})">✔️</button>
+        <button onclick="deleteTask('${task.id}')">❌</button>
+      </div>
+    `;
+    taskList.appendChild(li);
+  });
+}
+
+// Crear tarea
+async function addTask() {
+  const title = taskInput.value.trim();
+  if (!title) return;
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, completed: false })
+  });
+  const newTask = await res.json();
+  fetchTasks();
+  taskInput.value = "";
+}
+
+// Marcar tarea
+async function toggleTask(id, completed) {
+  await fetch(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ completed: !completed })
+  });
+  fetchTasks();
+}
+
+// Eliminar tarea
+async function deleteTask(id) {
+  await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+  fetchTasks();
+}
+
+// Eventos
+addTaskBtn.addEventListener("click", addTask);
+
+// Inicializar
+fetchTasks();
